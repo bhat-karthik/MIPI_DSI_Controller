@@ -1,0 +1,196 @@
+###############################################################################
+# File:    dsi_host_power.upf
+# Project: MIPI DSI Host Controller for Foveated Rendering Systems
+# Library: GSCL 45nm (gsclib045)
+# Standard: IEEE 1801 (Unified Power Format)
+#
+# Power Architecture:
+#   PD_ALWAYS_ON  — APB registers, reset synchronizers (never gated)
+#   PD_DSI_CORE   — Video pipeline + D-PHY TX (switchable via software)
+#   PD_FOVEATION  — Foveated Region Mapper (independently switchable)
+#
+# Usage:
+#   Pass 1 (without UPF): Skip this file, synthesize with SDC only
+#   Pass 2 (with UPF):    genus> read_power_intent dsi_host_power.upf
+#
+# Note: GSCL045 may not have dedicated retention cells. If Genus
+#       reports missing retention library cells, comment out the
+#       set_retention commands and re-run. Isolation works with
+#       standard AND/OR cells which GSCL045 does have.
+###############################################################################
+
+# Set design scope
+set_scope dsi_host_top
+
+###############################################################################
+# 1. Supply Networks
+###############################################################################
+
+# Primary power and ground (always-on)
+create_supply_net VDD
+create_supply_net VSS
+
+# Switchable supply for DSI core domain
+create_supply_net VDD_SW_CORE
+
+# Switchable supply for foveation domain
+create_supply_net VDD_SW_FOV
+
+# Supply ports (top-level power pins)
+create_supply_port VDD   -direction in
+create_supply_port VSS   -direction in
+
+# Connect primary supplies
+connect_supply_net VDD [find_supply_port VDD]
+connect_supply_net VSS [find_supply_port VSS]
+
+###############################################################################
+# 2. Power Domains
+###############################################################################
+
+# Always-On domain (default domain for the top level)
+create_power_domain PD_ALWAYS_ON \
+    -include_scope
+
+# DSI Core domain (switchable)
+create_power_domain PD_DSI_CORE \
+    -elements {
+        u_vtc
+        u_packer
+        u_async_fifo
+        u_packetizer
+        u_lane_mgr
+        u_dphy_tx
+    }
+
+# Foveation domain (independently switchable)
+create_power_domain PD_FOVEATION \
+    -elements {
+        u_fov_mapper
+    }
+
+###############################################################################
+# 3. Supply Connections to Domains
+###############################################################################
+
+# Always-On: connected to unswitched VDD
+set_domain_supply_net PD_ALWAYS_ON \
+    -primary_power_net VDD \
+    -primary_ground_net VSS
+
+# DSI Core: connected to switched VDD_SW_CORE
+set_domain_supply_net PD_DSI_CORE \
+    -primary_power_net VDD_SW_CORE \
+    -primary_ground_net VSS
+
+# Foveation: connected to switched VDD_SW_FOV
+set_domain_supply_net PD_FOVEATION \
+    -primary_power_net VDD_SW_FOV \
+    -primary_ground_net VSS
+
+###############################################################################
+# 4. Power Switches
+###############################################################################
+
+# Switch for DSI Core domain
+# Controlled by pwr_sw_core_en from APB register DSI_PWR_CTRL[0]
+create_power_switch SW_DSI_CORE \
+    -domain         PD_DSI_CORE \
+    -input_supply_port  {vin  VDD} \
+    -output_supply_port {vout VDD_SW_CORE} \
+    -control_port       {ctrl u_apb_regs/pwr_sw_core_en} \
+    -on_state           {on_state vin {ctrl}}
+
+# Switch for Foveation domain
+# Controlled by pwr_sw_fov_en from APB register DSI_PWR_CTRL[1]
+create_power_switch SW_FOVEATION \
+    -domain         PD_FOVEATION \
+    -input_supply_port  {vin  VDD} \
+    -output_supply_port {vout VDD_SW_FOV} \
+    -control_port       {ctrl u_apb_regs/pwr_sw_fov_en} \
+    -on_state           {on_state vin {ctrl}}
+
+###############################################################################
+# 5. Isolation Cells
+###############################################################################
+# When a switchable domain is powered off, its outputs float.
+# Isolation cells clamp those outputs to safe values.
+
+# --- DSI Core → Always-On boundary ---
+# HS data outputs should clamp to 0 (HS idle)
+# LP data outputs should clamp to 1 (LP-11 = idle state, both lines high)
+# This ensures the D-PHY presents LP-11 to the display when core is off.
+
+set_isolation iso_core_to_ao \
+    -domain         PD_DSI_CORE \
+    -applies_to     outputs \
+    -clamp_value    0 \
+    -isolation_power_net VDD \
+    -isolation_ground_net VSS
+
+set_isolation_control iso_core_to_ao \
+    -domain         PD_DSI_CORE \
+    -isolation_signal   u_apb_regs/pwr_sw_core_en \
+    -isolation_sense    low \
+    -location           parent
+
+# --- Foveation → DSI Core boundary ---
+# fov_tier should clamp to 2'b00 (Tier 0 = foveal = full quality)
+# This is the correct bypass behavior: when foveation is off, all pixels
+# are treated as foveal (RGB888).
+
+set_isolation iso_fov_to_core \
+    -domain         PD_FOVEATION \
+    -applies_to     outputs \
+    -clamp_value    0 \
+    -isolation_power_net VDD \
+    -isolation_ground_net VSS
+
+set_isolation_control iso_fov_to_core \
+    -domain         PD_FOVEATION \
+    -isolation_signal   u_apb_regs/pwr_sw_fov_en \
+    -isolation_sense    low \
+    -location           parent
+
+###############################################################################
+# 6. Retention (Optional — depends on library support)
+###############################################################################
+# GSCL045 may not have dedicated retention flip-flops.
+# If Genus errors on these commands, comment them out.
+# The design will still work — registers just lose state on power-off
+# and must be re-initialized by software after power-on.
+
+# Uncomment if your library has retention cells:
+# set_retention ret_core \
+#     -domain PD_DSI_CORE \
+#     -retention_power_net VDD \
+#     -retention_ground_net VSS
+#
+# set_retention_control ret_core \
+#     -domain PD_DSI_CORE \
+#     -save_signal    {u_apb_regs/pwr_sw_core_en low} \
+#     -restore_signal {u_apb_regs/pwr_sw_core_en high}
+
+###############################################################################
+# 7. Power State Table
+###############################################################################
+
+create_pst dsi_pst \
+    -supplies {VDD VDD_SW_CORE VDD_SW_FOV}
+
+# S0: Full off (only always-on domain active)
+add_pst_state S0_STANDBY \
+    -pst dsi_pst \
+    -state {FULL_ON OFF OFF}
+
+# S1: Core active, foveation off (standard display, no foveation)
+add_pst_state S1_CORE_ONLY \
+    -pst dsi_pst \
+    -state {FULL_ON FULL_ON OFF}
+
+# S2: Full active (foveated display mode)
+add_pst_state S2_FULL_ACTIVE \
+    -pst dsi_pst \
+    -state {FULL_ON FULL_ON FULL_ON}
+
+puts "INFO: UPF power intent loaded — 3 domains, 2 switches, 2 isolation strategies."

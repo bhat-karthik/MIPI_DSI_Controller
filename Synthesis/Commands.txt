@@ -1,0 +1,4 @@
+Commands:
+
+genus -f run_syn_pass1.tcl -log genus_pass1.log
+genus -f run_syn_pass2.tcl -log genus_pass2.log

@@ -1,0 +1,226 @@
+run 1000ns
+
+==========================================================
+  MIPI DSI Utility Modules â€” Self-Checking Testbench
+==========================================================
+
+--- GROUP 1: Reset Synchronizer Tests ---
+[PASS] ST 1.1: Async assert (immediate): expected=0x0, got=0x0
+[PASS] RST 1.2: Held during assert: expected=0x0, got=0x0
+[PASS] .3a: Not yet de-asserted (0 cyc): expected=0x0, got=0x0
+[PASS] .3b: Not yet de-asserted (1 cyc): expected=0x0, got=0x0
+[PASS] ST 1.3c: De-asserted after 2 cyc: expected=0x1, got=0x1
+[PASS] RST 1.4a: 3-stage async assert: expected=0x0, got=0x0
+[PASS] RST 1.4b: 3-stage after 1 cyc: expected=0x0, got=0x0
+[PASS] RST 1.4c: 3-stage after 2 cyc: expected=0x0, got=0x0
+[PASS] RST 1.4d: 3-stage after 3 cyc: expected=0x1, got=0x1
+
+--- GROUP 2: ECC Generator Tests ---
+[PASS] ECC 2.1: VSS (0x000001): expected=0x7, got=0x7
+[PASS] ECC 2.2: HSS (0x000021): expected=0x12, got=0x12
+[PASS] ECC 2.3: VSE (0x000011): expected=0x14, got=0x14
+[PASS] ECC 2.4: HSE (0x000031): expected=0x1, got=0x1
+[PASS] C 2.5: RGB888 WC=5760 (0x16803E): expected=0x3b, got=0x3b
+[PASS] ECC 2.6: All zeros (0x000000): expected=0x0, got=0x0
+[PASS] ECC 2.7: All ones (0xFFFFFF): expected=0x3c, got=0x3c
+[PASS] ECC 2.8: Syndrome (no error): expected=0x0, got=0x0
+[PASS] ECC 2.8b: err_single=0: expected=0x0, got=0x0
+[PASS] ECC 2.8c: err_double=0: expected=0x0, got=0x0
+[PASS] ECC 2.9: err_single detected: expected=0x1, got=0x1
+[PASS] ECC 2.9b: err_double=0: expected=0x0, got=0x0
+[PASS] ECC 2.10: err_double detected: expected=0x1, got=0x1
+[PASS] ECC 2.10b: err_single=0: expected=0x0, got=0x0
+
+--- GROUP 3: CRC-16 Generator Tests ---
+[PASS] RC 3.1: Initial seed after reset: expected=0xffff, got=0xffff
+[PASS] CRC 3.2: Seed after crc_init: expected=0xffff, got=0xffff
+[PASS] CRC 3.3: Single byte 0x00: expected=0xf87, got=0xf87
+[PASS] CRC 3.4: Single byte 0xFF: expected=0xff, got=0xff
+[PASS] CRC 3.5: Two bytes [0x00,0x00]: expected=0xf0b8, got=0xf0b8
+[PASS] .6: Three bytes [0x00,0x00,0x00]: expected=0x3933, got=0x3933
+[PASS] .7: Three bytes [0xFF,0xFF,0xFF]: expected=0xf78, got=0xf78
+[PASS] CRC 3.8: Re-init mid-computation: expected=0xffff, got=0xffff
+[PASS]  3.9: Hold value (5 idle cycles): expected=0x6e91, got=0x6e91
+
+==========================================================
+  TEST SUMMARY
+==========================================================
+  Total tests:  32
+  Passed:       32
+  Failed:       0
+==========================================================
+  >>> ALL TESTS PASSED <<<
+==========================================================
+
+$finish called at time : 487500 ps
+
+Comments on run 1: Changed line 190 and 208 in tb_utilities to non blocking statements - it was failing
+
+run 1000ns
+
+==========================================================
+  Pixel Pipeline Testbench (VTC â†’ Fov â†’ Packer)
+  Resolution: 16x8, Gaze: (8,4)
+  Foveal radiusÂ²=9, Mid radiusÂ²=36
+==========================================================
+
+--- Generating Frame 1 (foveation ENABLED) ---
+  VTC: LINE START v=0
+  VTC: FRAME START
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=1
+  PACKER: SOL tier=2
+INFO: [USF-XSim-96] XSim completed. Design snapshot 'tb_pixel_pipeline_behav' loaded.
+INFO: [USF-XSim-97] XSim simulation ran for 1000ns
+launch_simulation: Time (s): cpu = 00:00:02 ; elapsed = 00:00:12 . Memory (MB): peak = 1209.195 ; gain = 3.137
+run -all
+  PACKER: EOL
+  VTC: LINE START v=2
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=3
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=4
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=5
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=6
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=7
+  PACKER: SOL tier=2
+  PACKER: EOL
+
+--- Structural Verification ---
+
+--- Foveation Tier Distribution ---
+  Tier 0 (Foveal):  29 pixels
+  Tier 1 (Mid):     59 pixels
+  Tier 2 (Outer):   40 pixels
+  Total:            128 pixels
+
+--- Pixel-Level Tier Verification ---
+
+--- Generating Frame 2 (verification frame) ---
+  VTC: LINE START v=0
+  VTC: FRAME START
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=1
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=2
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=3
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=4
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=5
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=6
+  PACKER: SOL tier=2
+  PACKER: EOL
+  VTC: LINE START v=7
+  PACKER: SOL tier=2
+  PACKER: EOL
+
+==========================================================
+  TEST SUMMARY
+==========================================================
+  Total checks:  9
+  Passed:        9
+  Failed:        0
+  Bandwidth savings from foveation:
+    Full RGB888: 384 bytes/frame
+    Foveated:    688 bytes/frame
+    Savings:     -79%
+==========================================================
+  >>> ALL TESTS PASSED <<<
+==========================================================
+
+$finish called at time : 4981 ns
+
+Comments: None
+
+run 1000ns
+
+================================================================
+  MIPI DSI Host Controller â€” Top-Level Integration Testbench
+  Resolution: 8x4, Gaze: (4,2)
+  pixel_clk=148.5 MHz, byte_clk=200 MHz
+================================================================
+
+=== TEST 1: APB Register Write/Readback ===
+  [FAIL] APB: VID_HSIZE readback: expected=0x00020008, got=0xxxxxxxxx  <<<
+  [FAIL] APB: FOV_GAZE readback: expected=0x00020004, got=0x00020008  <<<
+  [FAIL] APB: PHY_CTRL readback: expected=0x00000002, got=0x00020004  <<<
+  PHY_TMR1 default = 0x00000002
+
+=== TEST 2: Full Frame â€” Foveation DISABLED ===
+  Configuring DUT via APB (foveation=0)...
+  Configuration complete.
+  Generating frame 1 (no foveation)...
+xsim: Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 1237.984 ; gain = 0.000
+INFO: [USF-XSim-96] XSim completed. Design snapshot 'dsi_host_tb_behav' loaded.
+INFO: [USF-XSim-97] XSim simulation ran for 1000ns
+launch_simulation: Time (s): cpu = 00:00:06 ; elapsed = 00:00:16 . Memory (MB): peak = 1237.984 ; gain = 0.000
+run -all
+  Frame 1 complete. Results:
+    Total packet bytes: 146
+    Total packets:      9
+    HS entries (data):  2
+    HS exits (data):    2
+    CLK HS entries:     1
+    HS bytes on lane 0: 35
+    FIFO overflow:      NO
+    Baseline total bytes: 146
+
+=== TEST 3: Full Frame â€” Foveation ENABLED ===
+  Configuring DUT via APB (foveation=1)...
+  Configuration complete.
+  Generating frame 2 (foveation enabled)...
+  Frame 2 complete. Results:
+    Total packet bytes: 180
+    Total packets:      17
+    HS bytes on lane 0: 24
+    FIFO overflow:      NO
+
+=== TEST 4: D-PHY LP State Verification ===
+
+=== TEST 5: Second Frame â€” Verify Repeatability ===
+  Generating frame 3 (repeat test)...
+    Total packets: 17
+
+=== TEST 6: Verify Status Registers ===
+  [FAIL] Status: fifo_empty after flush: expected=0x00000001, got=0x00000000  <<<
+
+=== TEST 7: Disable/Re-enable Controller ===
+  [FAIL] Disable: CTRL=0: expected=0x00000000, got=0x00000002  <<<
+  [FAIL] Re-enable: CTRL=3: expected=0x00000003, got=0x00000000  <<<
+  Generating frame 4 (after re-enable)...
+
+================================================================
+  TEST SUMMARY
+================================================================
+  Total checks:  22
+  Passed:        16
+  Failed:        6
+================================================================
+  >>> 6 TESTS FAILED â€” DEBUG REQUIRED <<<
+================================================================
+
+  NEXT STEPS:
+    1. Review waveforms in tb_dsi_host.vcd
+    2. Verify DSI packet structure in waveform viewer
+    3. Prepare Phase 1 presentation slides
+    4. Begin Genus synthesis: genus -f run_syn.tcl
+
+$finish called at time : 9382500 ps
